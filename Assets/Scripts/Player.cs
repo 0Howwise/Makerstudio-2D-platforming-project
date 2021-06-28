@@ -27,8 +27,13 @@ public class Player : MonoBehaviour {
 
 	Controller2D controller;
 
+	Animator playerAnimator;
+
 	Vector2 directionalInput;
 	bool wallSliding;
+	bool isRunning;
+	public bool isJumping;
+	bool onGround;
 	int wallDirX;
 
 	void Start() {
@@ -37,11 +42,13 @@ public class Player : MonoBehaviour {
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
+		playerAnimator = GetComponent<Animator>();
 	}
 
 	void Update() {
 		CalculateVelocity ();
 		HandleWallSliding ();
+		GroundCheck();
 
 		controller.Move (velocity * Time.deltaTime, directionalInput);
 
@@ -52,6 +59,9 @@ public class Player : MonoBehaviour {
 				velocity.y = 0;
 			}
 		}
+
+		//Setting the yVelocity for the jump animation
+        playerAnimator.SetFloat("yVelocity", Mathf.Clamp01(velocity.y));
 	}
 
 	public void SetDirectionalInput (Vector2 input) {
@@ -59,6 +69,9 @@ public class Player : MonoBehaviour {
 	}
 
 	public void OnJumpInputDown() {
+
+		playerAnimator.SetBool("isJumping", true);
+
 		if (wallSliding) {
 			if (wallDirX == directionalInput.x) {
 				velocity.x = -wallDirX * wallJumpClimb.x;
@@ -118,12 +131,35 @@ public class Player : MonoBehaviour {
 			}
 
 		}
-
+			
 	}
 
 	void CalculateVelocity() {
 		float targetVelocityX = directionalInput.x * moveSpeed;
 		velocity.x = Mathf.SmoothDamp (velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisions.below)?accelerationTimeGrounded:accelerationTimeAirborne);
 		velocity.y += gravity * Time.deltaTime;
+		if(targetVelocityX == 0){
+			isRunning = false;
+			playerAnimator.SetBool("isRunning", false);
+		} else if (onGround == true)  {
+			playerAnimator.SetBool("isRunning", true);
+		}  
 	}
+
+	 void GroundCheck(){
+        onGround = false;
+        isJumping = false;
+
+        //seeing if player is touching the ground
+        if (!controller.collisions.below) {
+            onGround = false;
+            isJumping = true;
+        } else {
+            onGround = true;
+        }
+        playerAnimator.SetBool("isJumping", !onGround);
+    }
+
+
+	
 }

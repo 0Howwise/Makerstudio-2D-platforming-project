@@ -3,6 +3,9 @@ using System.Collections;
 
 public class Controller2D : RaycastController {
 
+	public bool facingRight = false;
+	public SpriteRenderer spriteRenderer;
+
 	public float maxSlopeAngle = 80;
 
 	public CollisionInfo collisions;
@@ -12,7 +15,7 @@ public class Controller2D : RaycastController {
 	public override void Start() {
 		base.Start ();
 		collisions.faceDir = 1;
-
+		spriteRenderer = GetComponent<SpriteRenderer>();
 	}
 
 	public void Move(Vector2 moveAmount, bool standingOnPlatform) {
@@ -49,6 +52,14 @@ public class Controller2D : RaycastController {
 	void HorizontalCollisions(ref Vector2 moveAmount) {
 		float directionX = collisions.faceDir;
 		float rayLength = Mathf.Abs (moveAmount.x) + skinWidth;
+
+		if(directionX < 0 && !facingRight){
+			spriteRenderer.flipX = true;
+			facingRight = true;
+		} else if (directionX > 0 && facingRight){
+			spriteRenderer.flipX = false;
+			facingRight = false;
+		}
 
 		if (Mathf.Abs(moveAmount.x) < skinWidth) {
 			rayLength = 2*skinWidth;

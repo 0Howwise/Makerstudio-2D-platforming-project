@@ -33,6 +33,7 @@ public class EnemyDectectionField : MonoBehaviour {
         if(activated){
             if(rigidbody.velocity.y != 0){
                 force.x = 0;
+                force.y = 0;
             }
             
             //check if enemy is dead before it tries to move 
